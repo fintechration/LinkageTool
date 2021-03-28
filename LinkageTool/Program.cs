@@ -26,15 +26,19 @@ namespace LinkageTool
             LinkageDiff _linkageDiff = new LinkageDiff();
             if (args.Length == 0)
             {
-                Console.WriteLine("--------------KULLANIM KLAVUZU----------------");
+                Console.WriteLine("--------------TUTORIAL----------------");
                 Console.WriteLine("To fix the records :");
                 Console.WriteLine("-fix X:\\linkagefile");
                 Console.WriteLine(" ");
                 Console.WriteLine("To compare the records :");
-                Console.WriteLine("-diff X:\\linkagefilePROD X:\\linkagefileTEST");
+                Console.WriteLine("-d : DEV enviroment ");
+                Console.WriteLine("-t : Test enviroment ");
+                Console.WriteLine("-pp : Preprod enviroment ");
+                Console.WriteLine("-p : Prod enviroment ");
+                Console.WriteLine("-diff -p X:\\linkagefilePROD -t X:\\linkagefileTEST");
                 Console.WriteLine(" ");
                 Console.WriteLine("Fix then compare the records : ");
-                Console.WriteLine("-fix - diff X:\\linkagefilePROD X:\\linkagefileTEST");
+                Console.WriteLine("-fix - diff -p X:\\linkagefilePROD -t X:\\linkagefileTEST");
                 Console.WriteLine(" ");
             }
 
@@ -63,10 +67,10 @@ namespace LinkageTool
 
             if ((isDifferEnabled == 1) && (isFixxerEnabled == 1))
             {
-                Console.WriteLine("Linkage düzeltme işlemlerinin ardından fark bulma gerçekleşecek");
+                Console.WriteLine("Compare will start after fix operations completed");
                 if (args.Length < 6)
                 {
-                    Console.WriteLine("Hata! Dosya yolu eksiktir.Lutfen 2 adet dosya yolu giriniz");
+                    Console.WriteLine("Error! File paths missing");
                 }
                 else
                 {
@@ -83,16 +87,16 @@ namespace LinkageTool
                     ListToFile(listA, args[5], "_Fixed");
 
 
-                    resultList = _linkageDiff.StartCompare(listA, listB);
+                    resultList = _linkageDiff.StartCompare(envA,envB, listA, listB);
                     ListToFile(resultList, args[3], "_" + envA + "_VS_" + envB);
                 }
             }
             else if ((isDifferEnabled == 1))
             {
-                Console.WriteLine("Fark bulma işlemi gerçekleşecek");
+                Console.WriteLine("Compare operations started");
                 if (args.Length < 5)
                 {
-                    Console.WriteLine("Hata! Eksik parametre var lutfen kontrol ediniz");
+                    Console.WriteLine("Error! Missing parameters");
                 }
                 else
                 {
@@ -102,20 +106,20 @@ namespace LinkageTool
                     listB = (FileToList(args[4]));
                     // _linkageFix.StartFix(listA);
                     // _linkageFix.StartFix(listB);
-                    resultList = _linkageDiff.StartCompare(listA, listB);
+                    resultList = _linkageDiff.StartCompare(envA,envB,listA, listB);
                     ListToFile(resultList, args[2], "_"+envA+"_VS_"+envB);
                 }
             }
             else if (isFixxerEnabled == 1)
             {
-                Console.WriteLine("Linkage duzeltme işlemi gerçekleşecek");
+                
                 if (args.Length < 2)
                 {
-                    Console.WriteLine("Hata! Dosya yolu eksiktir.Lutfen 1 adet dosya yolu giriniz");
+                    Console.WriteLine("Error ! File path missing");
                 }
                 else
                 {
-                    Console.WriteLine("Linkage duzeltme islemleri basliyor");
+                    Console.WriteLine("Fix operations started");
                     listA = (FileToList(args[1]));
                     resultList = _linkageFix.StartFix(listA);
                     ListToFile(listA, args[1], "_Fixed");
@@ -125,7 +129,7 @@ namespace LinkageTool
             }
             if ((isDifferEnabled == 0) && (isFixxerEnabled == 0))
             {
-                Console.WriteLine("Hata! Lutfen gerceklestirmek istediginiz isleme ait parametre giriniz, mukerrer kayitlari duzeltme icin -fix ve 1 adet dosya yolu, fark bulmak icin -diff ve 2 adet dosya yolu, her iki islem icin de -fix -diff ve 2 adet dosya yolu giriniz");
+                Console.WriteLine("Error! No operation parameters found ! ");
                 
             }
 
@@ -187,7 +191,7 @@ namespace LinkageTool
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Dosyaya kaydederken exception: " + ex.Message);
+                Console.WriteLine("Exception occured while saving file: " + ex.Message);
 
             }
 

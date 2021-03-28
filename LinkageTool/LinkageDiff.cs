@@ -17,7 +17,7 @@ namespace LinkageTool
         private int notExisting = 0;
         List<string> _resultList = new List<string>();
 
-        public List<string> StartCompare(List<string> listA, List<string> listB)
+        public List<string> StartCompare(string envA, string envB, List<string> listA, List<string> listB)
         {
 
 
@@ -32,7 +32,7 @@ namespace LinkageTool
                     {
                         pgmName = listA[i].Split(new string[] { "PGMNAME=\"" }, StringSplitOptions.None)[1].Split('\"')[0].Trim();
                     }
-                    else if (listA[lineNumber].Contains("APPLNAME"))
+                    else if (listA[i].Contains("APPLNAME"))
                     {
                         pgmName = listA[i].Split(new string[] { "APPLNAME=" }, StringSplitOptions.None)[1].Split(' ')[0].Trim();
                     }
@@ -42,7 +42,7 @@ namespace LinkageTool
                     {
                         _pgmName = "";
 
-                        if (listB[j].Contains("PGMNAME") || listB[lineNumber].Contains("APPLNAME"))
+                        if (listB[j].Contains("PGMNAME") || listB[j].Contains("APPLNAME"))
                         {
                             if (listB[j].Contains("PGMNAME"))
                             {
@@ -60,8 +60,8 @@ namespace LinkageTool
                                 isExist = 1; // diger listede bu tanim var
                                 if (!listA[i].Equals(listB[j]))// a listesinde yer alan program ile b listesinde yer alan programin conf u ayni degilse
                                 {
-                                    _resultList.Add(pgmName + ": DIFFERENT_RECORD");
-                                    Console.WriteLine(pgmName + " has different linkage in other enviroment");
+                                    _resultList.Add("DIFFERENT_RECORD (" + envB + "): " + pgmName + " | " + listB[j]);
+                                    Console.WriteLine("DIFFERENT_RECORD (" + envB + "): " + pgmName + " | " + listB[j]);
                                     differenceCount++;
                                 }
                                 break;
@@ -70,21 +70,25 @@ namespace LinkageTool
                             {
                                 isExist = 0;
                             }
-
+                           
                         }
+                        lineNumber = j;
                     }
                     if (isExist == 0)
                     {
                         notExisting++; // A listesindeki pgm b'de yoksa fark var demektir.
-                        _resultList.Add(pgmName + ": NO_RECORD");
-                        Console.WriteLine(pgmName + " doesnt exist in other enviroment");
+                        _resultList.Add("EXIST_ONLY (" + envA + "): "+ pgmName + " | " + listA[i]);
+                        Console.WriteLine("EXIST_ONLY (" + envA + "): " + pgmName+ " | " + listA[i]);
                     }
                 }
 
             }
-
-            Console.WriteLine("Total Differences: " + differenceCount);
-            Console.WriteLine("Exist only in one enviroment: " + notExisting);
+            _resultList.Add(" ");
+            _resultList.Add("DIFFERENCES: " + differenceCount);
+            _resultList.Add("EXIST_ONLY " + "(" + envA + "): " + notExisting);
+            Console.WriteLine("DIFFERENCES: " + differenceCount);
+            Console.WriteLine("EXIST_ONLY "+"("+envA+"): " + notExisting);
+           
             return _resultList;
         }
 

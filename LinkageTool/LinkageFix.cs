@@ -16,7 +16,7 @@ namespace LinkageTool
         private string _pgmName;
 
 
-        public List<string> StartFix(List<string> lineList)
+        public List<string> StartFix(List<string> lineList) // input parametresi olan linelisti duzelterek uzerine yazar, geriye de hangi satirlari degistiginin resultini doner
         {
             List<string> _resultList = new List<string>();
             // Console.WriteLine("------Mukerrer Kayıtlar-----");
@@ -63,7 +63,8 @@ namespace LinkageTool
 
                                 if ((_pgmName == pgmName))
                                 {
-                                    Console.WriteLine(lineList[lineBNumber]);
+                                    // Console.WriteLine(lineList[lineBNumber]);
+                                    Console.WriteLine("DUPLICATE: " + _pgmName + " | " + lineList[lineBNumber]);
                                     _resultList.Add("DUPLICATE: " + _pgmName + " | " + lineList[lineBNumber]);
                                     lineList.RemoveAt(lineBNumber);
                                     
@@ -74,7 +75,7 @@ namespace LinkageTool
                                 {
                                     if (_pgmName.Substring(0, pgmName.Split('*')[0].Length).Contains(pgmName.Split('*')[0]))
                                     {
-                                        Console.WriteLine(lineList[lineBNumber]);
+                                        Console.WriteLine("NOEFFECT: " + _pgmName + "(" + pgmName + " is already defined) | " + lineList[lineBNumber]);
                                         _resultList.Add("NOEFFECT: " + _pgmName + "("+ pgmName+ " is already defined) | " + lineList[lineBNumber]);
                                         lineList.RemoveAt(lineBNumber);
 
@@ -95,6 +96,9 @@ namespace LinkageTool
                 }
 
             }
+            Console.WriteLine("\n\n\nNONEFFECTIVES: " + noneffectiveCnt);
+            Console.WriteLine("DUPLICATES: " + duplicateCnt);
+            Console.WriteLine("TOTAL: " + (duplicateCnt + noneffectiveCnt));
             _resultList.Add("\n\n\nNONEFFECTIVES: " + noneffectiveCnt);
             _resultList.Add("DUPLICATES: " + duplicateCnt);
             _resultList.Add("TOTAL: " + (duplicateCnt+noneffectiveCnt));
