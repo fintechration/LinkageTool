@@ -8,75 +8,97 @@ namespace LinkageTool
 {
     class LinkageFix
     {
-        private int lineNumber = 0;
-        private int duplicateLines;
+        private int lineANumber = 0;
+        private int lineBNumber = 0;
+        private int duplicateCnt=0;
+        private int noneffectiveCnt=0;
         private string pgmName;
         private string _pgmName;
-       
+
 
         public List<string> StartFix(List<string> lineList)
         {
             List<string> _resultList = new List<string>();
-            Console.WriteLine("------Mukerrer Kayıtlar-----");
+            // Console.WriteLine("------Mukerrer Kayıtlar-----");
             //lineList.Clear();
-           // lineList = FileToList(filePath);
-            for (lineNumber = 0; lineNumber < lineList.Count; lineNumber++)
+            // lineList = FileToList(filePath);
+            for (lineANumber = 0; lineANumber < lineList.Count; lineANumber++)
             {
-                pgmName = "";
 
-                if (lineList[lineNumber].Contains("PGMNAME") || lineList[lineNumber].Contains("APPLNAME"))
+
+                while (lineList[lineANumber] != "</LINKAGEOPTIONS>" && lineANumber < lineList.Count)  // bu satir gelene kadar satirlari incelemeye devam et ki her linkageoption block'unu kendi icinde incelemis olalim
                 {
 
-                    if (lineList[lineNumber].Contains("PGMNAME"))
+                    pgmName = "";
+                    if (lineList[lineANumber].Contains("PGMNAME") || lineList[lineANumber].Contains("APPLNAME"))
                     {
-                        pgmName = lineList[lineNumber].Split(new string[] { "PGMNAME=\"" }, StringSplitOptions.None)[1].Split('\"')[0].Trim();
-                    }
-                    else if (lineList[lineNumber].Contains("APPLNAME"))
-                    {
-                        pgmName = lineList[lineNumber].Split(new string[] { "APPLNAME=" }, StringSplitOptions.None)[1].Split(' ')[0].Trim();
-                    }
 
-
-                    for (int j = lineNumber + 1; j < lineList.Count; j++) // bir sonraki satirdan itibaren baslayarak tek tek kiyasla
-                    {
-                        _pgmName = "";
-
-                        if (lineList[j].Contains("PGMNAME") || lineList[lineNumber].Contains("APPLNAME"))
+                        if (lineList[lineANumber].Contains("PGMNAME"))
                         {
-                            if (lineList[j].Contains("PGMNAME"))
-                            {
-                                _pgmName = lineList[j].Split(new string[] { "PGMNAME=\"" }, StringSplitOptions.None)[1].Split('\"')[0].Trim();
-                            }
-                            else if (lineList[j].Contains("APPLNAME"))
-                            {
-                                _pgmName = lineList[j].Split(new string[] { "APPLNAME=" }, StringSplitOptions.None)[1].Split(' ')[0].Trim();
-                            }
+                            pgmName = lineList[lineANumber].Split(new string[] { "PGMNAME=\"" }, StringSplitOptions.None)[1].Split('\"')[0].Trim();
+                        }
+                        else if (lineList[lineANumber].Contains("APPLNAME"))
+                        {
+                            pgmName = lineList[lineANumber].Split(new string[] { "APPLNAME=" }, StringSplitOptions.None)[1].Split(' ')[0].Trim();
+                        }
 
-                            if ((_pgmName == pgmName))
+                        lineBNumber = lineANumber + 1;// a satirindan sonraki satira b satiri dedik ve numarasi ise a+1
+                        if (lineBNumber >= lineList.Count)
+                            break;
+
+                        while ((lineList[lineBNumber] != "</LINKAGEOPTIONS>") && (lineBNumber < lineList.Count))  // bu satir gelene kadar satirlari incelemeye devam et ki her linkageoptionlari kendi icinde incelemis olalim
+                        {
+                            _pgmName = "";
+
+                            if (lineList[lineBNumber].Contains("PGMNAME") || lineList[lineBNumber].Contains("APPLNAME"))
                             {
-                                Console.WriteLine(lineList[j]);
-                                lineList.RemoveAt(j);
-                                j--;
-                                duplicateLines++;
-                                _resultList.Add(_pgmName + " : DUPLICATE");
-                            }
-                            else if (pgmName.Contains("*") && (pgmName.Split('*')[0].Length <= _pgmName.Length))
-                            {
-                                if (_pgmName.Substring(0, pgmName.Split('*')[0].Length).Contains(pgmName.Split('*')[0]))
+                                if (lineList[lineBNumber].Contains("PGMNAME"))
                                 {
-                                    Console.WriteLine(lineList[j]);
-                                    duplicateLines++;
-                                    lineList.RemoveAt(j);
-                                    _resultList.Add(_pgmName + " : NONESENSE");
-                                    j--;
+                                    _pgmName = lineList[lineBNumber].Split(new string[] { "PGMNAME=\"" }, StringSplitOptions.None)[1].Split('\"')[0].Trim();
+                                }
+                                else if (lineList[lineBNumber].Contains("APPLNAME"))
+                                {
+                                    _pgmName = lineList[lineBNumber].Split(new string[] { "APPLNAME=" }, StringSplitOptions.None)[1].Split(' ')[0].Trim();
+                                }
+
+                                if ((_pgmName == pgmName))
+                                {
+                                    Console.WriteLine(lineList[lineBNumber]);
+                                    _resultList.Add("DUPLICATE: " + _pgmName + " | " + lineList[lineBNumber]);
+                                    lineList.RemoveAt(lineBNumber);
+                                    
+                                    lineBNumber--;
+                                    duplicateCnt++;
+                                }
+                                else if (pgmName.Contains("*") && (pgmName.Split('*')[0].Length <= _pgmName.Length))
+                                {
+                                    if (_pgmName.Substring(0, pgmName.Split('*')[0].Length).Contains(pgmName.Split('*')[0]))
+                                    {
+                                        Console.WriteLine(lineList[lineBNumber]);
+                                        _resultList.Add("NOEFFECT: " + _pgmName + "("+ pgmName+ " is already defined) | " + lineList[lineBNumber]);
+                                        lineList.RemoveAt(lineBNumber);
+
+                                        noneffectiveCnt++;
+                                        lineBNumber--;
+                                    }
                                 }
                             }
+                            lineBNumber++;
+                            if (lineBNumber >= lineList.Count)
+                                break;
                         }
+
                     }
+                    lineANumber++;
+                    if (lineANumber >= lineList.Count)
+                        break;
                 }
+
             }
-            Console.WriteLine("İlgili kayitlar icin duzeltme tamamlandi");
-            Console.WriteLine("Toplam Tekrar Eden Kayıt: " + duplicateLines);
+            _resultList.Add("\n\n\nNONEFFECTIVES: " + noneffectiveCnt);
+            _resultList.Add("DUPLICATES: " + duplicateCnt);
+            _resultList.Add("TOTAL: " + (duplicateCnt+noneffectiveCnt));
+
             return _resultList;
         }
     }
